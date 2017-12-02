@@ -80,15 +80,12 @@ describe ExpensesController do
     end
 
     it 'emails an email address after successful creation' do
-      expense = build(:expense)
-      email_body = "#{expense.name} by #{@user.full_name} needs to be approved"
-      email_address = "admin@expensr.com"
+      user    = create(:user)
+      expense = create(:expense, user: user)
 
-      expect(ExpenseMailer).to receive(:new)
-        .with(address: email_address, body: email_body)
-        .and_call_original
-
-      post :create, user_id: @user.id, expense: expense.attributes
+      expect do
+        post :create, user_id: user.id, expense: expense.attributes
+      end.to change { ActionMailer::Base.deliveries.count }.by(1)
     end
   end
 

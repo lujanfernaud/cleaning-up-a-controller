@@ -14,10 +14,7 @@ class ExpensesController < ApplicationController
     @expense = user.expenses.new(expense_params)
 
     if @expense.save
-      email_body = "#{@expense.name} by #{user.full_name} needs to be approved"
-      mailer = ExpenseMailer.new(address: 'admin@expensr.com', body: email_body)
-      mailer.deliver
-
+      send_email_to_admin(user, @expense)
       redirect_to user_expenses_path(user)
     else
       render :new, status: :bad_request
@@ -37,13 +34,6 @@ class ExpensesController < ApplicationController
       flash[:error] = 'You cannot update an approved expense'
       render :edit
     end
-  end
-
-  def approve
-    @expense = Expense.find(params[:expense_id])
-    @expense.update_attributes!(approved: true)
-
-    render :show
   end
 
   def destroy
@@ -80,5 +70,9 @@ class ExpensesController < ApplicationController
 
   def approved
     { approved: params[:approved] }
+  end
+
+  def send_email_to_admin(user, expense)
+    ExpenseMailer.notify_admin(user: user, expense: expense).deliver
   end
 end
