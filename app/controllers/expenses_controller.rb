@@ -2,7 +2,7 @@ class ExpensesController < ApplicationController
   before_action :find_user
 
   def index
-    @expenses = find_expenses
+    @expenses = ExpensesFinder.find_with(expenses_finder_params)
   end
 
   def new
@@ -45,26 +45,11 @@ class ExpensesController < ApplicationController
     @user = User.find(params[:user_id])
   end
 
-  def find_expenses
-    if expense_not_approved
-      Expense.not_approved(expenses_finder_params)
-    else
-      Expense.approved(expenses_finder_params.merge(approved))
-    end
-  end
-
-  def expense_not_approved
-    params[:approved].nil?
-  end
-
   def expenses_finder_params
     { user:       @user,
       min_amount: params[:min_amount],
-      max_amount: params[:max_amount] }
-  end
-
-  def approved
-    { approved: params[:approved] }
+      max_amount: params[:max_amount],
+      approved:   params[:approved] }
   end
 
   def expense_params
