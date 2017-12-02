@@ -1,30 +1,26 @@
 class ExpensesController < ApplicationController
+  before_action :find_user
+
   def index
-    @user = User.find(params[:user_id])
     @expenses = find_expenses
   end
 
   def new
-    @user = User.find(params[:user_id])
   end
 
   def create
-    user = User.find(params[:user_id])
-
-    @expense = user.expenses.new(expense_params)
+    @expense = @user.expenses.new(expense_params)
 
     if @expense.save
-      send_email_to_admin(user, @expense)
-      redirect_to user_expenses_path(user)
+      send_email_to_admin(@user, @expense)
+      redirect_to user_expenses_path(@user)
     else
       render :new, status: :bad_request
     end
   end
 
   def update
-    user = User.find(params[:user_id])
-
-    @expense = user.expenses.find(params[:id])
+    @expense = @user.expenses.find(params[:id])
 
     if !@expense.approved
       @expense.update_attributes!(expense_params)
@@ -38,16 +34,15 @@ class ExpensesController < ApplicationController
 
   def destroy
     expense = Expense.find(params[:id])
-    user = User.find(params[:user_id])
     expense.update_attributes!(deleted: true)
 
-    redirect_to user_expenses_path(user_id: user.id)
+    redirect_to user_expenses_path(user_id: @user.id)
   end
 
   private
 
-  def expense_params
-    params.require(:expense).permit(:name, :amount, :approved)
+  def find_user
+    @user = User.find(params[:user_id])
   end
 
   def find_expenses
