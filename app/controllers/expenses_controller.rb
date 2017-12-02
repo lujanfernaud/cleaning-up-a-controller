@@ -67,6 +67,10 @@ class ExpensesController < ApplicationController
     { approved: params[:approved] }
   end
 
+  def expense_params
+    params.require(:expense).permit(:name, :amount, :approved)
+  end
+
   def send_email_to_admin(user, expense)
     ExpenseMailer.notify_admin(user: user, expense: expense).deliver
   end
